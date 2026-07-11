@@ -17,7 +17,10 @@ export default function Header({ timestamp, rightElement }: HeaderProps) {
   };
 
   return (
-    <div className="sticky top-0 z-40 bg-[#0a0a0a]/95 backdrop-blur-md border-b border-white/5">
+    <div
+      style={{ paddingTop: "env(safe-area-inset-top, 0px)" }}
+      className="sticky top-0 z-40 bg-[#0a0a0a]/95 backdrop-blur-md border-b border-white/5"
+    >
       <div className="mx-auto max-w-mobile px-4 h-14 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <TrendingUp className="w-5 h-5 text-[#CCFF33]" />

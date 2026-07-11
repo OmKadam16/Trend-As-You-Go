@@ -14,7 +14,10 @@ export default function BottomNav() {
   const pathname = usePathname();
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-[#0a0a0a]/95 backdrop-blur-md border-t border-white/5">
+    <nav
+      style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}
+      className="fixed bottom-0 left-0 right-0 z-50 bg-[#0a0a0a]/95 backdrop-blur-md border-t border-white/5"
+    >
       <div className="mx-auto max-w-mobile px-4">
         <div className="flex items-center justify-around h-16">
           {tabs.map(({ href, label, Icon }) => {
