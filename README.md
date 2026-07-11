@@ -1,44 +1,47 @@
 # Trends As You Go
 
-A mobile-first web app for content creators that surfaces what's trending on X (Twitter) right now, and generates concrete, actionable video ideas for each trend on demand.
+Surface trending X (Twitter) topics and generate on-demand video content ideas — powered by OpenAI.
 
-**Bring your own API key** — this is a pure client-side app with no backend to host or configure. Powered by OpenAI's GPT-4o-mini.
+## Features
 
-## How it works
+- **Live trending feed** across 9 niches (AI, Healthcare, Finance, Fitness, etc.)
+- **Search** any keyword for cross-niche trends
+- **On-demand AI content ideas** for each trend
+- **Mobile-first design** with dark theme and lime accents
+- **Bring your own API key** — no backend, no database
 
-1. Enter your OpenAI API key in the Settings page
-2. The app calls GPT-4o-mini live via a thin Next.js API route to fetch trending topics
-3. Browse the feed, filter by niche, or search for specific topics
-4. Tap any topic to see details — then tap **"FIND CONTENT IDEAS"** to generate 5 distinct video concepts on demand
+## Screenshots
 
-### Niche Filter
+_Add images here once you have them._  
+Place PNG files in `public/screenshots/` and reference them like:  
+`![Feed](/screenshots/feed.png)`
 
-Tap a niche chip (AI, Healthcare, Finance, etc.) on the Home screen to scope trends to that specific industry. Each niche triggers a tailored prompt. Your selection is saved in localStorage.
+## How to Use
 
-### Content Ideas
+1. **Get an API key** — Visit [platform.openai.com/api-keys](https://platform.openai.com/api-keys) and create a key.
+2. **Enter it in Settings** — Open the app, tap **Settings** (gear icon), paste your key, and save.
+3. **Browse trends** — The Home feed shows trending topics. Tap a niche chip (For You, AI, Finance...) to filter.
+4. **Search** — Tap the **Search** tab to find trends by keyword, independent of your current niche.
+5. **View a topic** — Tap any trend to see AI summary, X signal, key drivers, and metadata.
+6. **Generate content ideas** — On the topic detail page, tap **FIND CONTENT IDEAS** to get 5 video concepts. Regenerate anytime.
 
-Each topic's detail page has a **"FIND CONTENT IDEAS"** button that calls GPT-4o-mini to generate 5 varied video concepts (reaction, tutorial, opinion, etc.) specific to that trend. Results are cached during your session, and you can regenerate for fresh ideas at any time.
-
-## Setup
+## Local Setup
 
 ```bash
-git clone <repo>
 npm install
 npm run dev
 ```
 
-Open the app → go to **Settings** → paste in your OpenAI API key from [platform.openai.com/api-keys](https://platform.openai.com/api-keys) → done.
+Open [http://localhost:3000](http://localhost:3000), go to Settings, and paste your OpenAI API key.
 
-## Tech
+## Tech Stack
 
 - **Next.js 14** (App Router)
 - **TypeScript**
 - **Tailwind CSS**
-- **lucide-react** (icons)
-- **OpenAI API** (trend data via GPT-4o)
+- **lucide-react**
+- **OpenAI GPT-4o-mini**
 
-## Notes
+## Privacy
 
-- Each refresh calls the OpenAI API live and uses API credits. There is no caching or scheduled job.
-- Your API key is stored in **localStorage only** — it never touches any server other than OpenAI's API.
-- No database, no backend, no third-party services.
+Your API key is stored in localStorage only and sent directly to OpenAI via a thin Next.js API route. No data is stored on any server.
