@@ -12,9 +12,7 @@ Surface trending X (Twitter) topics and generate on-demand video content ideas â
 
 ## Screenshots
 
-_Add images here once you have them._  
-Place PNG files in `public/screenshots/` and reference them like:  
-`![Feed](/screenshots/feed.png)`
+![Trends As You Go](/screenshots/App%201.png)
 
 ## How to Use
 
