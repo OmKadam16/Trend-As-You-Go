@@ -12,7 +12,7 @@ Surface trending X (Twitter) topics and generate on-demand video content ideas â
 
 ## Screenshots
 
-![Trends As You Go](/screenshots/App%201.png)
+![Trends As You Go](public/screenshots/App%201.png)
 
 ## How to Use
 
