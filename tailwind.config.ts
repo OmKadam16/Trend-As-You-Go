@@ -9,8 +9,14 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        background: "var(--background)",
-        foreground: "var(--foreground)",
+        lime: "#CCFF33",
+        "near-black": "#0a0a0a",
+      },
+      fontFamily: {
+        sans: ["Inter", "system-ui", "sans-serif"],
+      },
+      maxWidth: {
+        mobile: "430px",
       },
     },
   },

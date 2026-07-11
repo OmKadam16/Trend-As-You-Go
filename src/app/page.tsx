@@ -1,101 +1,237 @@
-import Image from "next/image";
+"use client";
 
-export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="https://nextjs.org/icons/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+import { useEffect, useState, useCallback } from "react";
+import Link from "next/link";
+import { useTopics } from "@/context/TopicsContext";
+import Header from "@/components/Header";
+import { NICHE_OPTIONS } from "@/config/niches";
+import type { Niche } from "@/config/niches";
+import {
+  TrendingUp,
+  Plus,
+  RefreshCw,
+} from "lucide-react";
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+const NICHE_STORAGE_KEY = "selected-niche";
+
+export default function HomePage() {
+  const {
+    topics,
+    loading,
+    error,
+    lastUpdated,
+    setNiche,
+    refreshTopics,
+  } = useTopics();
+  const [hasKey, setHasKey] = useState<boolean | null>(null);
+  const [localNiche, setLocalNiche] = useState<Niche>("For You");
+
+  const fetchWithNiche = useCallback(
+    (key: string, n: Niche) => {
+      setNiche(n);
+      refreshTopics(key, n);
+    },
+    [setNiche, refreshTopics]
+  );
+
+  useEffect(() => {
+    const key = localStorage.getItem("openai-key");
+    if (key) {
+      setHasKey(true);
+      const savedNiche = localStorage.getItem(NICHE_STORAGE_KEY) as
+        | Niche
+        | null;
+      const activeNiche = savedNiche ?? "For You";
+      setLocalNiche(activeNiche);
+      if (topics.length === 0) {
+        fetchWithNiche(key, activeNiche);
+      }
+    } else {
+      setHasKey(false);
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const handleNicheChange = (n: Niche) => {
+    setLocalNiche(n);
+    localStorage.setItem(NICHE_STORAGE_KEY, n);
+    const key = localStorage.getItem("openai-key");
+    if (key) fetchWithNiche(key, n);
+  };
+
+  const handleRefresh = () => {
+    const key = localStorage.getItem("openai-key");
+    if (key) fetchWithNiche(key, localNiche);
+  };
+
+  if (hasKey === null) return null;
+
+  if (hasKey === false) {
+    return (
+      <>
+        <Header />
+        <div className="flex flex-col items-center justify-center px-6 pt-24 text-center">
+          <div className="w-16 h-16 rounded-full bg-[#CCFF33]/10 flex items-center justify-center mb-5">
+            <TrendingUp className="w-7 h-7 text-[#CCFF33]" />
+          </div>
+          <h2 className="text-white text-xl font-bold mb-2">
+            No API Key Yet
+          </h2>
+          <p className="text-gray-400 text-sm leading-relaxed max-w-xs mb-6">
+            Add your OpenAI API key to get started and see what&apos;s
+            trending on X right now.
+          </p>
+          <Link
+            href="/settings"
+            className="inline-flex items-center gap-2 bg-[#CCFF33] text-[#0a0a0a] font-bold text-sm px-6 py-3 rounded-full hover:brightness-110 transition-all"
           >
-            <Image
-              className="dark:invert"
-              src="https://nextjs.org/icons/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+            Go to Settings
+          </Link>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
+      </>
+    );
+  }
+
+  if (loading && topics.length === 0) {
+    return (
+      <>
+        <Header />
+        <div className="flex flex-col items-center justify-center px-6 pt-24 text-center">
+          <RefreshCw className="w-8 h-8 text-[#CCFF33] animate-spin mb-4" />
+          <p className="text-gray-400 text-sm">
+            Fetching {localNiche !== "For You" ? `${localNiche} ` : ""}
+            trending topics from X...
+          </p>
+        </div>
+      </>
+    );
+  }
+
+  if (error && topics.length === 0) {
+    return (
+      <>
+        <Header />
+        <div className="flex flex-col items-center justify-center px-6 pt-24 text-center">
+          <div className="w-16 h-16 rounded-full bg-red-500/10 flex items-center justify-center mb-5">
+            <TrendingUp className="w-7 h-7 text-red-400" />
+          </div>
+          <h2 className="text-white text-lg font-bold mb-2">
+            Something went wrong
+          </h2>
+          <p className="text-gray-400 text-sm leading-relaxed max-w-xs mb-6">
+            {error}
+          </p>
+          <button
+            onClick={handleRefresh}
+            className="inline-flex items-center gap-2 bg-[#CCFF33] text-[#0a0a0a] font-bold text-sm px-6 py-3 rounded-full hover:brightness-110 transition-all"
+          >
+            <RefreshCw className="w-4 h-4" />
+            Try Again
+          </button>
+        </div>
+      </>
+    );
+  }
+
+  return (
+    <>
+      <Header timestamp={lastUpdated} />
+      <div className="px-4 py-2 overflow-x-auto scrollbar-hide border-b border-white/5">
+        <div className="flex gap-2">
+          {NICHE_OPTIONS.map((n) => (
+            <button
+              key={n}
+              onClick={() => handleNicheChange(n)}
+              className={`whitespace-nowrap rounded-full px-4 py-1.5 text-xs font-semibold transition-colors ${
+                localNiche === n
+                  ? "bg-[#CCFF33] text-[#0a0a0a]"
+                  : "bg-white/[0.05] text-gray-300 border border-white/10 hover:bg-white/[0.1]"
+              }`}
+            >
+              {n}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="px-4 pt-2 pb-4">
+        {error && (
+          <div className="mb-4 p-3 rounded-lg bg-red-500/10 border border-red-500/20">
+            <p className="text-red-400 text-xs font-medium">{error}</p>
+            <button
+              onClick={handleRefresh}
+              className="text-red-300 text-xs underline mt-1"
+            >
+              Try again
+            </button>
+          </div>
+        )}
+
+        {loading && (
+          <div className="flex items-center justify-center gap-2 py-3 mb-2">
+            <RefreshCw className="w-4 h-4 text-[#CCFF33] animate-spin" />
+            <span className="text-gray-500 text-xs font-medium">
+              Refreshing...
+            </span>
+          </div>
+        )}
+
+        {!loading && topics.length === 0 && !error ? (
+          <div className="flex flex-col items-center justify-center px-6 pt-12 text-center">
+            <TrendingUp className="w-8 h-8 text-gray-600 mb-3" />
+            <h3 className="text-white text-sm font-bold mb-1">
+              {localNiche !== "For You"
+                ? `Not much trending in ${localNiche} right now`
+                : "No trends yet"}
+            </h3>
+            <p className="text-gray-500 text-xs leading-relaxed max-w-xs">
+              {localNiche !== "For You"
+                ? "Try again later or pick another niche."
+                : "Tap the + button to fetch the latest trends."}
+            </p>
+          </div>
+        ) : (
+          <div className="space-y-2">
+            {topics.map((topic) => (
+              <Link
+                key={topic.id}
+                href={`/topic/${topic.id}`}
+                className="block p-4 rounded-xl bg-white/[0.03] border border-white/[0.06] hover:bg-white/[0.06] transition-colors"
+              >
+                <div className="flex items-start gap-3">
+                  <span className="text-[#CCFF33] text-2xl font-black leading-none min-w-[2rem]">
+                    {topic.rank}
+                  </span>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="text-[10px] font-bold uppercase tracking-wider bg-white/10 text-white px-2 py-0.5 rounded-full">
+                        X
+                      </span>
+                      <span className="text-[10px] font-medium text-gray-600 uppercase tracking-wider">
+                        {topic.category}
+                      </span>
+                    </div>
+                    <h3 className="text-white font-bold text-sm leading-snug mb-1">
+                      {topic.title}
+                    </h3>
+                    <p className="text-gray-400 text-xs leading-relaxed line-clamp-2">
+                      {topic.blurb}
+                    </p>
+
+                  </div>
+                </div>
+              </Link>
+            ))}
+          </div>
+        )}
+      </div>
+
+      <button
+        onClick={handleRefresh}
+        disabled={loading}
+        className="fixed bottom-20 right-4 z-40 w-12 h-12 rounded-full bg-[#CCFF33] text-[#0a0a0a] flex items-center justify-center shadow-lg shadow-[#CCFF33]/20 hover:brightness-110 transition-all disabled:opacity-50"
+      >
+        <Plus className="w-6 h-6" />
+      </button>
+    </>
   );
 }
