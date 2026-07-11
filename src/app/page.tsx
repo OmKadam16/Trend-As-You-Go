@@ -22,50 +22,60 @@ export default function HomePage() {
     lastUpdated,
     setNiche,
     refreshTopics,
+    refreshScrapebadgerTrends,
   } = useTopics();
-  const [hasKey, setHasKey] = useState<boolean | null>(null);
+  const [hasOpenaiKey, setHasOpenaiKey] = useState<boolean | null>(null);
+  const [hasSbKey, setHasSbKey] = useState(false);
   const [localNiche, setLocalNiche] = useState<Niche>("For You");
 
   const fetchWithNiche = useCallback(
-    (key: string, n: Niche) => {
+    (oKey: string, sKey: string, n: Niche) => {
       setNiche(n);
-      refreshTopics(key, n);
+      if (sKey) {
+        refreshScrapebadgerTrends(sKey, oKey, n);
+      } else {
+        refreshTopics(oKey, n);
+      }
     },
-    [setNiche, refreshTopics]
+    [setNiche, refreshTopics, refreshScrapebadgerTrends]
   );
 
   useEffect(() => {
-    const key = localStorage.getItem("openai-key");
-    if (key) {
-      setHasKey(true);
+    const oKey = localStorage.getItem("openai-key");
+    const sKey = localStorage.getItem("scrapebadger-key");
+    if (oKey) {
+      setHasOpenaiKey(true);
+      setHasSbKey(!!sKey);
       const savedNiche = localStorage.getItem(NICHE_STORAGE_KEY) as
         | Niche
         | null;
       const activeNiche = savedNiche ?? "For You";
       setLocalNiche(activeNiche);
       if (topics.length === 0) {
-        fetchWithNiche(key, activeNiche);
+        fetchWithNiche(oKey, sKey ?? "", activeNiche);
       }
     } else {
-      setHasKey(false);
+      setHasOpenaiKey(false);
     }
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleNicheChange = (n: Niche) => {
     setLocalNiche(n);
     localStorage.setItem(NICHE_STORAGE_KEY, n);
-    const key = localStorage.getItem("openai-key");
-    if (key) fetchWithNiche(key, n);
+    const oKey = localStorage.getItem("openai-key");
+    const sKey = localStorage.getItem("scrapebadger-key");
+    if (oKey) fetchWithNiche(oKey, sKey ?? "", n);
   };
 
   const handleRefresh = () => {
-    const key = localStorage.getItem("openai-key");
-    if (key) fetchWithNiche(key, localNiche);
+    const oKey = localStorage.getItem("openai-key");
+    const sKey = localStorage.getItem("scrapebadger-key");
+    if (oKey) fetchWithNiche(oKey, sKey ?? "", localNiche);
   };
 
-  if (hasKey === null) return null;
+  if (hasOpenaiKey === null) return null;
 
-  if (hasKey === false) {
+  if (hasOpenaiKey === false) {
     return (
       <>
         <Header />
@@ -99,7 +109,7 @@ export default function HomePage() {
           <RefreshCw className="w-8 h-8 text-[#CCFF33] animate-spin mb-4" />
           <p className="text-gray-400 text-sm">
             Fetching {localNiche !== "For You" ? `${localNiche} ` : ""}
-            trending topics from X...
+            {hasSbKey ? "trending posts from X..." : "trending topics from X..."}
           </p>
         </div>
       </>
@@ -216,7 +226,6 @@ export default function HomePage() {
                     <p className="text-gray-400 text-xs leading-relaxed line-clamp-2">
                       {topic.blurb}
                     </p>
-
                   </div>
                 </div>
               </Link>

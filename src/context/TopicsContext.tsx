@@ -18,6 +18,11 @@ type TopicsContextType = {
   niche: Niche;
   setNiche: (niche: Niche) => void;
   refreshTopics: (apiKey: string, niche?: Niche) => Promise<void>;
+  refreshScrapebadgerTrends: (
+    sbApiKey: string,
+    openaiApiKey: string,
+    niche?: Niche
+  ) => Promise<void>;
   searchResults: Topic[];
   setSearchResults: (topics: Topic[]) => void;
 };
@@ -61,6 +66,39 @@ export function TopicsProvider({ children }: { children: ReactNode }) {
     []
   );
 
+  const refreshScrapebadgerTrends = useCallback(
+    async (sbApiKey: string, openaiApiKey: string, niche?: Niche) => {
+      setLoading(true);
+      setError(null);
+      try {
+        const res = await fetch("/api/scrapebadger-trends", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            sbApiKey,
+            openaiApiKey,
+            niche: niche ?? "For You",
+          }),
+        });
+        const data = await res.json();
+        if (!res.ok) {
+          setError(data.error || "Failed to fetch trends");
+          return;
+        }
+        const sorted = (data.topics || []).sort(
+          (a: Topic, b: Topic) => a.rank - b.rank
+        );
+        setTopics(sorted);
+        setLastUpdated(new Date());
+      } catch {
+        setError("Network error. Check your connection and try again.");
+      } finally {
+        setLoading(false);
+      }
+    },
+    []
+  );
+
   return (
     <TopicsContext.Provider
       value={{
@@ -71,6 +109,7 @@ export function TopicsProvider({ children }: { children: ReactNode }) {
         niche,
         setNiche,
         refreshTopics,
+        refreshScrapebadgerTrends,
         searchResults,
         setSearchResults,
       }}
