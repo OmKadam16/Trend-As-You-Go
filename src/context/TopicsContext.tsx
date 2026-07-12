@@ -44,7 +44,10 @@ export function TopicsProvider({ children }: { children: ReactNode }) {
   const topics = useMemo(() => {
     if (niche === "For You") {
       const all = Object.values(topicsByNiche).flat();
-      return all.sort((a, b) => a.rank - b.rank);
+      const sorted = all.sort(
+        (a, b) => b.estimatedMentions - a.estimatedMentions
+      );
+      return sorted.map((t, i) => ({ ...t, rank: i + 1 }));
     }
     return topicsByNiche[niche] ?? [];
   }, [niche, topicsByNiche]);
