@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { useTopics } from "@/context/TopicsContext";
 import Header from "@/components/Header";
@@ -20,62 +20,38 @@ export default function HomePage() {
     loading,
     error,
     lastUpdated,
+    niche,
     setNiche,
     refreshTopics,
     refreshScrapebadgerTrends,
   } = useTopics();
-  const [hasOpenaiKey, setHasOpenaiKey] = useState<boolean | null>(null);
-  const [hasSbKey, setHasSbKey] = useState(false);
-  const [localNiche, setLocalNiche] = useState<Niche>("For You");
-
-  const fetchWithNiche = useCallback(
-    (oKey: string, sKey: string, n: Niche) => {
-      setNiche(n);
-      if (sKey) {
-        refreshScrapebadgerTrends(sKey, oKey, n);
-      } else {
-        refreshTopics(oKey, n);
-      }
-    },
-    [setNiche, refreshTopics, refreshScrapebadgerTrends]
-  );
-
-  useEffect(() => {
-    const oKey = localStorage.getItem("openai-key");
-    const sKey = localStorage.getItem("scrapebadger-key");
-    if (oKey) {
-      setHasOpenaiKey(true);
-      setHasSbKey(!!sKey);
-      const savedNiche = localStorage.getItem(NICHE_STORAGE_KEY) as
-        | Niche
-        | null;
-      const activeNiche = savedNiche ?? "For You";
-      setLocalNiche(activeNiche);
-      if (topics.length === 0) {
-        fetchWithNiche(oKey, sKey ?? "", activeNiche);
-      }
-    } else {
-      setHasOpenaiKey(false);
-    }
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  const [localNiche, setLocalNiche] = useState<Niche>(() => {
+    if (typeof window === "undefined") return "For You";
+    return (localStorage.getItem(NICHE_STORAGE_KEY) as Niche) ?? "For You";
+  });
 
   const handleNicheChange = (n: Niche) => {
     setLocalNiche(n);
+    setNiche(n);
     localStorage.setItem(NICHE_STORAGE_KEY, n);
-    const oKey = localStorage.getItem("openai-key");
-    const sKey = localStorage.getItem("scrapebadger-key");
-    if (oKey) fetchWithNiche(oKey, sKey ?? "", n);
   };
 
   const handleRefresh = () => {
     const oKey = localStorage.getItem("openai-key");
     const sKey = localStorage.getItem("scrapebadger-key");
-    if (oKey) fetchWithNiche(oKey, sKey ?? "", localNiche);
+    if (!oKey) return;
+    if (sKey) {
+      refreshScrapebadgerTrends(sKey, oKey, localNiche);
+    } else {
+      refreshTopics(oKey, localNiche);
+    }
   };
 
-  if (hasOpenaiKey === null) return null;
+  const hasApiKey =
+    typeof window !== "undefined" &&
+    !!localStorage.getItem("openai-key");
 
-  if (hasOpenaiKey === false) {
+  if (!hasApiKey) {
     return (
       <>
         <Header />
@@ -108,8 +84,9 @@ export default function HomePage() {
         <div className="flex flex-col items-center justify-center px-6 pt-24 text-center">
           <RefreshCw className="w-8 h-8 text-[#CCFF33] animate-spin mb-4" />
           <p className="text-gray-400 text-sm">
-            Fetching {localNiche !== "For You" ? `${localNiche} ` : ""}
-            {hasSbKey ? "trending posts from X..." : "trending topics from X..."}
+            {localNiche === "For You"
+              ? "Fetching trends across all niches..."
+              : `Fetching ${localNiche} trends from X...`}
           </p>
         </div>
       </>
@@ -176,7 +153,7 @@ export default function HomePage() {
           </div>
         )}
 
-        {loading && (
+        {loading && topics.length > 0 && (
           <div className="flex items-center justify-center gap-2 py-3 mb-2">
             <RefreshCw className="w-4 h-4 text-[#CCFF33] animate-spin" />
             <span className="text-gray-500 text-xs font-medium">
@@ -189,14 +166,14 @@ export default function HomePage() {
           <div className="flex flex-col items-center justify-center px-6 pt-12 text-center">
             <TrendingUp className="w-8 h-8 text-gray-600 mb-3" />
             <h3 className="text-white text-sm font-bold mb-1">
-              {localNiche !== "For You"
-                ? `Not much trending in ${localNiche} right now`
-                : "No trends yet"}
+              {localNiche === "For You"
+                ? "No trends yet"
+                : `No ${localNiche} trends yet`}
             </h3>
             <p className="text-gray-500 text-xs leading-relaxed max-w-xs">
-              {localNiche !== "For You"
-                ? "Try again later or pick another niche."
-                : "Tap the + button to fetch the latest trends."}
+              {localNiche === "For You"
+                ? 'Tap the + button to discover trends across all niches.'
+                : `Tap the + button to discover ${localNiche} trends.`}
             </p>
           </div>
         ) : (
@@ -226,6 +203,11 @@ export default function HomePage() {
                     <p className="text-gray-400 text-xs leading-relaxed line-clamp-2">
                       {topic.blurb}
                     </p>
+                    {niche === "For You" && topic.niche && (
+                      <span className="inline-block mt-1.5 text-[10px] font-semibold uppercase tracking-wider bg-white/[0.06] text-gray-500 px-2 py-0.5 rounded-full">
+                        {topic.niche}
+                      </span>
+                    )}
                   </div>
                 </div>
               </Link>

@@ -19,6 +19,7 @@ export type Topic = {
   trendVelocity: string;
   sourceCount: number;
   updatedAt: string;
+  niche?: string;
 };
 
 export type TopicResponseRaw = {

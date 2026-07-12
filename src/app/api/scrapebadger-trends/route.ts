@@ -20,7 +20,7 @@ function slugify(text: string): string {
     .replace(/(^-|-$)/g, "");
 }
 
-function toCamel(raw: TopicResponseRaw, index: number): Topic {
+function toCamel(raw: TopicResponseRaw, index: number, niche?: string): Topic {
   return {
     id: slugify(raw.title),
     rank: index + 1,
@@ -37,6 +37,7 @@ function toCamel(raw: TopicResponseRaw, index: number): Topic {
     trendVelocity: raw.trend_velocity,
     sourceCount: raw.source_count ?? 0,
     updatedAt: new Date().toISOString(),
+    niche,
   };
 }
 
@@ -253,7 +254,7 @@ Return the trends as a JSON array. Group related tweets into the same trend. Ret
     const sorted = [...raw].sort(
       (a, b) => b.estimated_mentions - a.estimated_mentions
     );
-    const topics = sorted.map((t, i) => toCamel(t, i));
+    const topics = sorted.map((t, i) => toCamel(t, i, niche));
 
     return NextResponse.json({ topics });
   } catch (err) {
