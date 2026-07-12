@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useTopics } from "@/context/TopicsContext";
 import Header from "@/components/Header";
@@ -25,10 +25,16 @@ export default function HomePage() {
     refreshTopics,
     refreshScrapebadgerTrends,
   } = useTopics();
-  const [localNiche, setLocalNiche] = useState<Niche>(() => {
-    if (typeof window === "undefined") return "For You";
-    return (localStorage.getItem(NICHE_STORAGE_KEY) as Niche) ?? "For You";
-  });
+  const [mounted, setMounted] = useState(false);
+  const [localNiche, setLocalNiche] = useState<Niche>("For You");
+  const [hasApiKey, setHasApiKey] = useState(false);
+
+  useEffect(() => {
+    const savedNiche = localStorage.getItem(NICHE_STORAGE_KEY) as Niche | null;
+    if (savedNiche) setLocalNiche(savedNiche);
+    setHasApiKey(!!localStorage.getItem("openai-key"));
+    setMounted(true);
+  }, []);
 
   const handleNicheChange = (n: Niche) => {
     setLocalNiche(n);
@@ -47,9 +53,7 @@ export default function HomePage() {
     }
   };
 
-  const hasApiKey =
-    typeof window !== "undefined" &&
-    !!localStorage.getItem("openai-key");
+  if (!mounted) return null;
 
   if (!hasApiKey) {
     return (
